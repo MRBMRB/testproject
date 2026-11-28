@@ -1,0 +1,26 @@
+name: CI
+
+# Builds and tests every push to main and to an agent's ai/** branch, and every pull request.
+# It reads no secret, uses no environment and runs only on GitHub-hosted runners, and its
+# token may only read the contents: Agent Workbench checks exactly this before it pushes here.
+on:
+  push:
+    branches: [main, 'ai/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+      - run: dotnet restore TestProject.slnx
+      - run: dotnet build TestProject.slnx --no-restore
+      - run: dotnet test --solution TestProject.slnx --no-build
